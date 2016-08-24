@@ -17,14 +17,25 @@ import (
 
 var opts = make([]opt, 0, 8)
 
+var RequiredPositionalArgs = []string{}
+
 // Redefine this function to change the way usage is printed
 var Usage = func() string {
+	h := new(bytes.Buffer)
 	programName := os.Args[0][strings.LastIndex(os.Args[0], "/")+1:]
-	if Summary != "" {
-		return fmt.Sprintf("Usage of %s:\n\t", programName) +
-			Summary + "\n" + Help()
+	if len(RequiredPositionalArgs) != 0 {
+		fmt.Fprintf(h, "Usage: %s [options]", programName)
+		for _, arg := range RequiredPositionalArgs {
+			fmt.Fprintf(h, " %s", arg)
+		}
+	} else {
+		fmt.Fprintf(h, "Usage of %s:", programName)
 	}
-	return fmt.Sprintf("Usage of %s:\n%s", programName, Help())
+	if Summary != "" {
+		fmt.Fprintf(h, "\n\t%s\n", Summary)
+	}
+	fmt.Fprint(h, Help())
+	return h.String()
 }
 
 // Redefine this to change the summary of your program (used in the
@@ -499,7 +510,7 @@ func Parse(extraopts func() []string) bool {
 			append(&Args, a)
 		}
 	}
-	
+
 	return earlyEnd
 }
 
